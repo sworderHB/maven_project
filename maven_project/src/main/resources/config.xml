@@ -1,0 +1,5 @@
+<?xml version="1.0"?>
+<config>
+	<className>design.command.pack002.HelpCommand</className>
+    <className>design.command.pack002.MinimizeCommand</className>
+</config>

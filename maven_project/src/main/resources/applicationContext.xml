@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>  
+<!-- Bean头部 -->  
+<beans xmlns="http://www.springframework.org/schema/beans"  
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"  
+    xmlns:p="http://www.springframework.org/schema/p"  
+    xmlns:mvc="http://www.springframework.org/schema/mvc"  
+    xmlns:context="http://www.springframework.org/schema/context"  
+    xmlns:util="http://www.springframework.org/schema/util"  
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd  
+            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd  
+            http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">  
+   
+    <!-- 启动包扫描功能，以便注册带有@Controller、@Service、@repository、@Component等注解的类成为spring的bean -->   
+    <context:component-scan base-package="com.haobin.mqquartz" /> 
+    
+    <bean id="producerJob1" class="com.haobin.mqquartz.ProducerJob1" />
+    <bean id="producerJob2" class="com.haobin.mqquartz.ProducerJob2" />
+	
+    <!-- job的配置开始 -->
+    <bean id="myJobDetail"
+        class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="producerJob1" />
+        </property>
+        <property name="targetMethod">
+            <value>sendMessage1</value>
+        </property>
+    </bean>
+    <!-- job的配置结束 -->
+
+
+	<bean id="myJobDetail2"
+        class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="producerJob2" />
+        </property>
+        <property name="targetMethod">
+            <value>sendMessage2</value>
+        </property>
+    </bean>
+
+    <!-- 调度的配置开始 -->
+    <bean id="producerJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="myJobDetail" />
+        </property>
+        <property name="cronExpression">
+            <!--  */5 * * * * ?  每隔5秒执行一次 
+            	0 */8 * * *  每8个小时 
+            	10 0 0,8,16 * * ?  表示00:00:10  08:00:10 16:00:10 执行
+            -->
+            <value>10 0 0,8,16 * * ?</value>  <!-- Cron表达式“10 */1 * * * ?”意为：从10秒开始，每1分钟执行一次。  -->
+        </property>
+    </bean>
+    <!-- 调度的配置结束 -->
+
+	<bean id="producerJobTrigger2" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail">
+            <ref bean="myJobDetail2" />
+        </property>
+        <property name="cronExpression">
+            <!--  */5 * * * * ?  每隔5秒执行一次 
+            	0 */8 * * *  每8个小时 
+            	10 5 0,8,16 * * ?  表示00:05:10  08:05:10 16:05:10 执行
+            -->
+            <value>10 5 0,8,16 * * ?</value>  <!-- Cron表达式“10 */1 * * * ?”意为：从10秒开始，每1分钟执行一次。  -->
+        </property>
+    </bean>
+
+    <!-- 启动触发器的配置开始 -->
+    <bean name="startQuertz" lazy-init="false" autowire="no"
+        class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="producerJobTrigger" />
+                <ref bean="producerJobTrigger2" />
+            </list>
+        </property>
+    </bean>
+    <!-- 启动触发器的配置结束 -->    
+</beans> 
